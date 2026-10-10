@@ -1,13 +1,14 @@
 """
 End-to-end pipeline: classify intent -> score sentiment -> retrieve relevant FAQ
-articles -> generate a final answer. This is the module both app.py (Streamlit UI)
-and tests/test_pipeline.py call — the UI and the tests never duplicate this logic.
+articles -> check answerability -> generate a final answer (or abstain).
+This is the module both app.py (Streamlit UI) and tests/test_pipeline.py call.
 """
 from pathlib import Path
 from src.intent_classifier import load_classifier, predict_intent
 from src.sentiment import analyze_sentiment
 from src.retriever import load_index, retrieve
 from src.generator import generate_answer
+from src.answerability import check_answerability
 
 ROOT = Path(__file__).parent.parent
 
@@ -21,15 +22,25 @@ class SupportAssistant:
         intent_result = predict_intent(self.classifier, query)
         sentiment_result = analyze_sentiment(query)
         retrieved = retrieve(query, self.retriever_resources, top_k=top_k)
-        generation = generate_answer(query, retrieved, sentiment_result["label"])
+
+        verdict = check_answerability(query, retrieved)
+        if verdict["abstain"]:
+            answer = verdict["message"]
+            backend = "abstain-rule"
+        else:
+            generation = generate_answer(query, retrieved, sentiment_result["label"])
+            answer = generation["answer"]
+            backend = generation["backend"]
 
         return {
             "query": query,
             "intent": intent_result,
             "sentiment": sentiment_result,
             "retrieved": retrieved,
-            "answer": generation["answer"],
-            "generation_backend": generation["backend"],
+            "answer": answer,
+            "generation_backend": backend,
+            "abstained": verdict["abstain"],
+            "abstain_reason": verdict["reason"],
         }
 
 

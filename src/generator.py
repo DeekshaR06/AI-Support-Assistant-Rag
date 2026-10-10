@@ -21,7 +21,7 @@ import os
 SYSTEM_PROMPT = (
     "You are a helpful, concise customer support assistant. Answer the customer's "
     "question using ONLY the provided knowledge base snippets. If the snippets don't "
-    "contain the answer, say you'll escalate to a human agent instead of guessing. "
+    "say you cannot answer and suggest the customer contact the support team instead of guessing"
     "Keep the answer under 80 words and match a tone appropriate to the customer's "
     "detected sentiment (extra empathetic if they sound frustrated)."
 )
@@ -56,7 +56,7 @@ def _generate_with_llm(query: str, retrieved: list, sentiment_label: str) -> str
 def _generate_with_template(query: str, retrieved: list, sentiment_label: str) -> str:
     if not retrieved:
         return ("I couldn't find anything specific about that in our knowledge base. "
-                "I'm escalating this to a human agent who can help further.")
+                "Please contact our support team, who can help further.")
 
     top = retrieved[0]
     prefix = ""

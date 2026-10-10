@@ -1,0 +1,809 @@
+{
+  "label": "step2",
+  "split": "all",
+  "top_k": 3,
+  "summary": {
+    "n_total": 41,
+    "n_answerable": 22,
+    "n_unanswerable": 19,
+    "answerable": {
+      "recall_at_1": 0.636,
+      "recall_at_3": 0.727,
+      "precision_at_3": 0.258,
+      "mrr": 0.667,
+      "correct_top1_answer_rate": 0.636,
+      "wrongly_abstained_rate": 0.045
+    },
+    "unanswerable": {
+      "correct_abstention_rate": 0.579,
+      "unsafe_answer_rate": 0.421
+    },
+    "mean_latency_ms": 0.951
+  },
+  "rows": [
+    {
+      "id": "d01",
+      "split": "dev",
+      "category": "direct",
+      "query": "How do I get a refund for a duplicate charge?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_001"
+      ],
+      "retrieved_ids": [
+        "faq_001",
+        "faq_012",
+        "faq_016"
+      ],
+      "top_similarity": 0.976,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "If you were charged twice for the same order, contact billing support with your order ID and the two charge dates. Duplicate charges are refunded automatically within 3-5 business days once verified.",
+      "latency_ms": 2.2
+    },
+    {
+      "id": "d02",
+      "split": "dev",
+      "category": "direct",
+      "query": "Where can I find my invoices?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_002"
+      ],
+      "retrieved_ids": [
+        "faq_002",
+        "faq_004",
+        "faq_011"
+      ],
+      "top_similarity": 0.986,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "Invoices are available under Account Settings > Billing > Invoice History. You can download any invoice as a PDF from there.",
+      "latency_ms": 1.0
+    },
+    {
+      "id": "d03",
+      "split": "dev",
+      "category": "paraphrase",
+      "query": "I want to download a PDF copy of my bill",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_002"
+      ],
+      "retrieved_ids": [
+        "faq_002",
+        "faq_004",
+        "faq_011"
+      ],
+      "top_similarity": 0.986,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "Glad to hear it! Invoices are available under Account Settings > Billing > Invoice History. You can download any invoice as a PDF from there.",
+      "latency_ms": 1.0
+    },
+    {
+      "id": "d04",
+      "split": "dev",
+      "category": "paraphrase",
+      "query": "Do you take PayPal?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_003"
+      ],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_004",
+        "faq_011"
+      ],
+      "top_similarity": 0.999,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "We accept all major credit cards, PayPal, and SEPA direct debit for customers in the EU.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "d05",
+      "split": "dev",
+      "category": "paraphrase",
+      "query": "My card got billed two times for one purchase",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_001"
+      ],
+      "retrieved_ids": [
+        "faq_012",
+        "faq_004",
+        "faq_011"
+      ],
+      "top_similarity": 0.992,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "Digital subscriptions can be refunded within 14 days of purchase if unused beyond the trial features. Physical products can be returned within 30 days in original condition for a full refund.",
+      "latency_ms": 1.3
+    },
+    {
+      "id": "d06",
+      "split": "dev",
+      "category": "paraphrase",
+      "query": "The application crashes whenever I open it",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_005"
+      ],
+      "retrieved_ids": [
+        "faq_005",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.996,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "First, make sure you're on the latest version. If the crash continues, clear the app cache under Settings > Storage, then restart your device. If it still crashes, send us the crash log from Settings > Help > Send Diagnostics.",
+      "latency_ms": 1.5
+    },
+    {
+      "id": "d07",
+      "split": "dev",
+      "category": "paraphrase",
+      "query": "I lost my authenticator and need to reset 2FA",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_006"
+      ],
+      "retrieved_ids": [
+        "faq_006",
+        "faq_009",
+        "faq_017"
+      ],
+      "top_similarity": 0.912,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "I'm really sorry for the trouble this has caused. Go to Account Settings > Security > Two-Factor Authentication and click Reset. You'll need to verify your identity via your recovery email.",
+      "latency_ms": 1.1
+    },
+    {
+      "id": "d08",
+      "split": "dev",
+      "category": "policy",
+      "query": "Can I return a physical product after 3 weeks?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_012"
+      ],
+      "retrieved_ids": [
+        "faq_012",
+        "faq_021",
+        "faq_022"
+      ],
+      "top_similarity": 0.66,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "Digital subscriptions can be refunded within 14 days of purchase if unused beyond the trial features. Physical products can be returned within 30 days in original condition for a full refund. You may also find this useful: Yes, we support two-way sync with Google Calendar and Outlook. Connect it under Settings > Integrations > Calendar.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "d09",
+      "split": "dev",
+      "category": "multi_article",
+      "query": "I want to stop paying but keep my account for a while",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_013",
+        "faq_014"
+      ],
+      "retrieved_ids": [
+        "faq_011",
+        "faq_010",
+        "faq_002"
+      ],
+      "top_similarity": 0.61,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "I'm really sorry for the trouble this has caused. Yes. Contact support with both account emails and we will merge order history and subscriptions into the account you choose as primary within 5 business days. You may also find this useful: Go to Account Settings > Profile > Email, enter the new address, and confirm via the verification link sent to it. Your old email remains active until the new one is verified.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "d10",
+      "split": "dev",
+      "category": "multi_article",
+      "query": "My package came broken and I want my money back",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_016"
+      ],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I couldn't find anything about that in the knowledge base. Please contact our support team for help.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "d11",
+      "split": "dev",
+      "category": "customer_specific",
+      "query": "What is the status of my specific refund?",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_012",
+        "faq_016",
+        "faq_001"
+      ],
+      "top_similarity": 0.844,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I can't see account, order or payment records, so I can't answer questions about a specific order, refund or charge. Please contact our support team.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "d12",
+      "split": "dev",
+      "category": "customer_specific",
+      "query": "Where is my order #55123 right now?",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_017",
+        "faq_001",
+        "faq_011"
+      ],
+      "top_similarity": 0.782,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I can't see account, order or payment records, so I can't answer questions about a specific order, refund or charge. Please contact our support team.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "d13",
+      "split": "dev",
+      "category": "customer_specific",
+      "query": "Why was my card declined yesterday?",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I can't see account, order or payment records, so I can't answer questions about a specific order, refund or charge. Please contact our support team.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "d14",
+      "split": "dev",
+      "category": "not_in_kb",
+      "query": "What is the weather like on Mars today?",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I couldn't find anything about that in the knowledge base. Please contact our support team for help.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "d15",
+      "split": "dev",
+      "category": "not_in_kb",
+      "query": "Do you offer phone support on weekends?",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_011",
+        "faq_021",
+        "faq_016"
+      ],
+      "top_similarity": 0.494,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "Glad to hear it! Yes. Contact support with both account emails and we will merge order history and subscriptions into the account you choose as primary within 5 business days.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "d16",
+      "split": "dev",
+      "category": "not_in_kb",
+      "query": "Who is the CEO of the company?",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I couldn't find anything about that in the knowledge base. Please contact our support team for help.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "d17",
+      "split": "dev",
+      "category": "ambiguous",
+      "query": "It's not working",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I couldn't find anything about that in the knowledge base. Please contact our support team for help.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "d18",
+      "split": "dev",
+      "category": "sensitive",
+      "query": "I think someone hacked my account and used my card",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_011",
+        "faq_010",
+        "faq_002"
+      ],
+      "top_similarity": 0.61,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "I'm really sorry for the trouble this has caused. Yes. Contact support with both account emails and we will merge order history and subscriptions into the account you choose as primary within 5 business days. You may also find this useful: Go to Account Settings > Profile > Email, enter the new address, and confirm via the verification link sent to it. Your old email remains active until the new one is verified.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "d19",
+      "split": "dev",
+      "category": "empty",
+      "query": "",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "Please type a question so I can search the knowledge base.",
+      "latency_ms": 0.7
+    },
+    {
+      "id": "h01",
+      "split": "heldout",
+      "category": "paraphrase",
+      "query": "How long will delivery take if I order from abroad?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_015"
+      ],
+      "retrieved_ids": [
+        "faq_017",
+        "faq_011",
+        "faq_001"
+      ],
+      "top_similarity": 0.92,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "You can change the delivery address within 1 hour of placing the order via Order History > Edit. After that window, contact support and we'll try to intercept the shipment, though this isn't always possible.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "h02",
+      "split": "heldout",
+      "category": "paraphrase",
+      "query": "Can I switch my shipping address after I've ordered?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_017"
+      ],
+      "retrieved_ids": [
+        "faq_004",
+        "faq_015",
+        "faq_017"
+      ],
+      "top_similarity": 0.733,
+      "rank_of_first_relevant": 2,
+      "abstained": false,
+      "answer": "Go to Account Settings > Billing > Address, update the fields, and click Save. The new address applies to your next invoice. You may also find this useful: Standard shipping takes 3-7 business days domestically and 7-14 business days internationally. Express shipping (available at checkout) takes 1-3 business days domestically.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "h03",
+      "split": "heldout",
+      "category": "paraphrase",
+      "query": "Is there a discount for university students?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_020"
+      ],
+      "retrieved_ids": [
+        "faq_020",
+        "faq_004",
+        "faq_011"
+      ],
+      "top_similarity": 0.99,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "Yes, students with a valid .edu or equivalent institutional email get 50% off any paid plan. Apply under Account Settings > Billing > Student Discount.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "h04",
+      "split": "heldout",
+      "category": "paraphrase",
+      "query": "Does it work with Outlook calendar?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_021"
+      ],
+      "retrieved_ids": [
+        "faq_021",
+        "faq_015",
+        "faq_004"
+      ],
+      "top_similarity": 0.99,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "Yes, we support two-way sync with Google Calendar and Outlook. Connect it under Settings > Integrations > Calendar.",
+      "latency_ms": 1.1
+    },
+    {
+      "id": "h05",
+      "split": "heldout",
+      "category": "paraphrase",
+      "query": "Where is my data stored in Europe?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_022"
+      ],
+      "retrieved_ids": [
+        "faq_022",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.995,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "Yes, and EU customer data is hosted in Frankfurt in compliance with GDPR. You can request a data export or deletion at any time from Account Settings > Privacy.",
+      "latency_ms": 1.6
+    },
+    {
+      "id": "h06",
+      "split": "heldout",
+      "category": "paraphrase",
+      "query": "What computer specs do I need?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_007"
+      ],
+      "retrieved_ids": [
+        "faq_006",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.99,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "Go to Account Settings > Security > Two-Factor Authentication and click Reset. You'll need to verify your identity via your recovery email.",
+      "latency_ms": 1.1
+    },
+    {
+      "id": "h07",
+      "split": "heldout",
+      "category": "paraphrase",
+      "query": "How do I merge my two profiles?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_011"
+      ],
+      "retrieved_ids": [
+        "faq_011",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.972,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "Yes. Contact support with both account emails and we will merge order history and subscriptions into the account you choose as primary within 5 business days.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "h08",
+      "split": "heldout",
+      "category": "paraphrase",
+      "query": "Safari is lagging when syncing",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_008"
+      ],
+      "retrieved_ids": [
+        "faq_008",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.999,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "I'm really sorry for the trouble this has caused. Some users on Safari 16 experience a sync delay of up to 60 seconds. This is a known issue and a fix is scheduled for the next release; Chrome and Firefox are unaffected.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "h09",
+      "split": "heldout",
+      "category": "multi_article",
+      "query": "I need to cancel and also get a refund",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_013",
+        "faq_012"
+      ],
+      "retrieved_ids": [
+        "faq_013",
+        "faq_012",
+        "faq_006"
+      ],
+      "top_similarity": 0.771,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "I'm really sorry for the trouble this has caused. Go to Account Settings > Subscription > Cancel Plan. Cancellation takes effect at the end of the current billing period; you keep access until then.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "h10",
+      "split": "heldout",
+      "category": "customer_specific",
+      "query": "Can you tell me when my refund will arrive in my bank account?",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_012",
+        "faq_016",
+        "faq_001"
+      ],
+      "top_similarity": 0.741,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I can't see account, order or payment records, so I can't answer questions about a specific order, refund or charge. Please contact our support team.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "h11",
+      "split": "heldout",
+      "category": "not_in_kb",
+      "query": "What is the best pizza topping?",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I couldn't find anything about that in the knowledge base. Please contact our support team for help.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "h12",
+      "split": "heldout",
+      "category": "sensitive",
+      "query": "I was charged and I'm furious, I want to speak to a manager",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_001",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.981,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "I'm really sorry for the trouble this has caused. If you were charged twice for the same order, contact billing support with your order ID and the two charge dates. Duplicate charges are refunded automatically within 3-5 business days once verified.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "u01",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "i got charged after i cancelled my plan",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_001",
+        "faq_013",
+        "faq_020"
+      ],
+      "top_similarity": 0.633,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "I'm really sorry for the trouble this has caused. If you were charged twice for the same order, contact billing support with your order ID and the two charge dates. Duplicate charges are refunded automatically within 3-5 business days once verified. You may also find this useful: Go to Account Settings > Subscription > Cancel Plan. Cancellation takes effect at the end of the current billing period; you keep access until then.",
+      "latency_ms": 0.9
+    },
+    {
+      "id": "u02",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "is there an android app",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_007",
+        "faq_005",
+        "faq_017"
+      ],
+      "top_similarity": 0.78,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "The desktop app requires Windows 10+, macOS 12+, or a modern Linux distribution with at least 4GB RAM. The web app works on any browser released in the last 2 years. You may also find this useful: First, make sure you're on the latest version. If the crash continues, clear the app cache under Settings > Storage, then restart your device. If it still crashes, send us the crash log from Settings > Help > Send Diagnostics.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "u03",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "forgot my password how to get in",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_009",
+        "faq_004",
+        "faq_011"
+      ],
+      "top_similarity": 0.985,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "Check your spam folder first. If it's not there, wait 10 minutes (emails can be delayed) and try again. If you still don't receive it, contact support with your account email so we can manually trigger a reset.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "u04",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "my package haven't arried yet, it'se been two weeks though",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I couldn't find anything about that in the knowledge base. Please contact our support team for help.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "u05",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "I want to run the software on my old lapyop is that possible?",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_007"
+      ],
+      "retrieved_ids": [
+        "faq_010",
+        "faq_017",
+        "faq_004"
+      ],
+      "top_similarity": 0.771,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "Glad to hear it! Go to Account Settings > Profile > Email, enter the new address, and confirm via the verification link sent to it. Your old email remains active until the new one is verified. You may also find this useful: You can change the delivery address within 1 hour of placing the order via Order History > Edit. After that window, contact support and we'll try to intercept the shipment, though this isn't always possible.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "u06",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "CAn i pay using Apple pay",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_003",
+        "faq_002",
+        "faq_001"
+      ],
+      "top_similarity": 0.0,
+      "rank_of_first_relevant": null,
+      "abstained": true,
+      "answer": "I couldn't find anything about that in the knowledge base. Please contact our support team for help.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "u07",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "I need a bill for my tax filling",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_002"
+      ],
+      "retrieved_ids": [
+        "faq_006",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.99,
+      "rank_of_first_relevant": 2,
+      "abstained": false,
+      "answer": "Go to Account Settings > Security > Two-Factor Authentication and click Reset. You'll need to verify your identity via your recovery email.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "u08",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "I want my personal data to be deleted",
+      "answerable": true,
+      "relevant_ids": [
+        "faq_022"
+      ],
+      "retrieved_ids": [
+        "faq_022",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.995,
+      "rank_of_first_relevant": 0,
+      "abstained": false,
+      "answer": "Glad to hear it! Yes, and EU customer data is hosted in Frankfurt in compliance with GDPR. You can request a data export or deletion at any time from Account Settings > Privacy.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "u09",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "I am thinking to mave to paid plan from fee plan",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_020",
+        "faq_013",
+        "faq_019"
+      ],
+      "top_similarity": 0.855,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "Yes, students with a valid .edu or equivalent institutional email get 50% off any paid plan. Apply under Account Settings > Billing > Student Discount.",
+      "latency_ms": 0.8
+    },
+    {
+      "id": "u10",
+      "split": "heldout",
+      "category": "user_written",
+      "query": "I want to talk to the customer care person on the phone",
+      "answerable": false,
+      "relevant_ids": [],
+      "retrieved_ids": [
+        "faq_022",
+        "faq_017",
+        "faq_002"
+      ],
+      "top_similarity": 0.995,
+      "rank_of_first_relevant": null,
+      "abstained": false,
+      "answer": "Glad to hear it! Yes, and EU customer data is hosted in Frankfurt in compliance with GDPR. You can request a data export or deletion at any time from Account Settings > Privacy.",
+      "latency_ms": 1.1
+    }
+  ]
+}

@@ -61,13 +61,29 @@ def test_full_pipeline_smoke(assistant):
     assert result["sentiment"]["label"] in {"positive", "neutral", "negative"}
     assert isinstance(result["answer"], str) and len(result["answer"]) > 0
 
-
-def test_pipeline_handles_empty_query_gracefully(assistant):
+def test_empty_query_abstains(assistant):
     result = assistant.handle("")
-    assert isinstance(result["answer"], str)
+    assert result["abstained"] is True
+    assert result["abstain_reason"] == "empty_query"
 
 
-def test_pipeline_handles_offtopic_query_gracefully(assistant):
-    # nothing in the KB should match this well; generator should still not crash
-    result = assistant.handle("What's the weather like on Mars today?")
-    assert isinstance(result["answer"], str) and len(result["answer"]) > 0
+def test_no_evidence_query_abstains(assistant):
+    result = assistant.handle("What is the weather like on Mars today?")
+    assert result["abstained"] is True
+    assert result["abstain_reason"] == "no_evidence"
+
+
+def test_customer_specific_query_abstains(assistant):
+    result = assistant.handle("Where is my order #55123 right now?")
+    assert result["abstained"] is True
+    assert result["abstain_reason"] == "customer_specific"
+
+
+def test_answerable_query_does_not_abstain(assistant):
+    result = assistant.handle("How do I get a refund for a duplicate charge?")
+    assert result["abstained"] is False
+
+
+def test_abstention_does_not_claim_escalation(assistant):
+    result = assistant.handle("")
+    assert "escalat" not in result["answer"].lower()
