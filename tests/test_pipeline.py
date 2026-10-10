@@ -87,3 +87,13 @@ def test_answerable_query_does_not_abstain(assistant):
 def test_abstention_does_not_claim_escalation(assistant):
     result = assistant.handle("")
     assert "escalat" not in result["answer"].lower()
+
+def test_low_coverage_query_abstains(assistant):
+    result = assistant.handle("Do you offer phone support on weekends?")
+    assert result["abstained"] is True
+    assert result["abstain_reason"] == "low_coverage"
+
+
+def test_well_covered_query_still_answers(assistant):
+    result = assistant.handle("Where can I find my invoices?")
+    assert result["abstained"] is False
