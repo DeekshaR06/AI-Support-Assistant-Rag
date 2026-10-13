@@ -1,44 +1,58 @@
 """
-End-to-end pipeline: classify intent -> score sentiment -> retrieve relevant FAQ
-articles -> check answerability -> generate a final answer (or abstain).
-This is the module both app.py (Streamlit UI) and tests/test_pipeline.py call.
+End-to-end pipeline: intent -> tone -> retrieve -> answerability -> reply (or decline).
+Used by app.py, the tests and the evaluation scripts.
 """
-from pathlib import Path
-from src.intent_classifier import load_classifier, predict_intent
-from src.sentiment import analyze_sentiment
-from src.retriever import load_index, retrieve
-from src.generator import generate_answer
-from src.answerability import check_answerability
+import logging
 
-ROOT = Path(__file__).parent.parent
+from src.answerability import check_answerability
+from src.intent_classifier import load_classifier, predict_intent
+from src.kb_retriever import DEFAULT_INDEX_PATH, DEFAULT_KB_PATH, KnowledgeBase
+from src.reply import compose_reply
+from src.tone import score_tone
+
+log = logging.getLogger(__name__)
+
+
+def _load_knowledge_base() -> KnowledgeBase:
+    """Load the saved index; rebuild it if it is missing or older than the FAQ file."""
+    if DEFAULT_INDEX_PATH.exists():
+        kb = KnowledgeBase.load()
+        if not kb.is_stale(DEFAULT_KB_PATH):
+            return kb
+        log.warning("FAQ file changed since the index was built; rebuilding the index.")
+    else:
+        log.warning("No saved index found; building one from the FAQ file.")
+    kb = KnowledgeBase.build(DEFAULT_KB_PATH)
+    kb.save()
+    return kb
 
 
 class SupportAssistant:
     def __init__(self):
         self.classifier = load_classifier()
-        self.retriever_resources = load_index()
+        self.kb = _load_knowledge_base()
 
     def handle(self, query: str, top_k: int = 3) -> dict:
-        intent_result = predict_intent(self.classifier, query)
-        sentiment_result = analyze_sentiment(query)
-        retrieved = retrieve(query, self.retriever_resources, top_k=top_k)
+        query = query if isinstance(query, str) else ""
+        intent = predict_intent(self.classifier, query)
+        tone = score_tone(query)
+        retrieved = self.kb.search(query, top_k=top_k)
 
         verdict = check_answerability(query, retrieved)
         if verdict["abstain"]:
-            answer = verdict["message"]
-            backend = "abstain-rule"
+            answer, backend, sources = verdict["message"], "abstain-rule", []
         else:
-            generation = generate_answer(query, retrieved, sentiment_result["label"])
-            answer = generation["answer"]
-            backend = generation["backend"]
+            reply = compose_reply(retrieved, tone["label"])
+            answer, backend, sources = reply["answer"], reply["backend"], reply["sources"]
 
         return {
             "query": query,
-            "intent": intent_result,
-            "sentiment": sentiment_result,
+            "intent": intent,
+            "sentiment": tone,
             "retrieved": retrieved,
             "answer": answer,
             "generation_backend": backend,
+            "sources": sources,
             "abstained": verdict["abstain"],
             "abstain_reason": verdict["reason"],
         }
@@ -46,15 +60,6 @@ class SupportAssistant:
 
 if __name__ == "__main__":
     assistant = SupportAssistant()
-    for q in [
-        "I was charged twice for my subscription and nobody has refunded me!",
-        "How long does shipping usually take?",
-        "The app crashes every time I open it, so annoying",
-    ]:
-        result = assistant.handle(q)
-        print("=" * 70)
-        print("Q:", result["query"])
-        print(f"Intent: {result['intent']['intent']} ({result['intent']['confidence']})")
-        print(f"Sentiment: {result['sentiment']['label']} ({result['sentiment']['compound']})")
-        print(f"Top match: {result['retrieved'][0]['question'] if result['retrieved'] else 'none'}")
-        print(f"Answer [{result['generation_backend']}]: {result['answer']}")
+    for q in ["How long does shipping usually take?", "Where is my order #55123?"]:
+        r = assistant.handle(q)
+        print("Q:", q, "\nA:", r["answer"], "\nSources:", r["sources"], "\n")
