@@ -1,106 +1,179 @@
-# AI Customer Support Assistant
+# AI Customer Support Assistant (Evidence-Aware RAG)
 
-A retrieval-augmented (RAG) support assistant: it classifies a customer message's **intent** and **sentiment**, retrieves the most relevant article from a knowledge base, and drafts a grounded reply — instead of a chatbot that hallucinates answers.
+An offline Retrieval-Augmented Generation (RAG) customer-support assistant. It answers
+questions from a knowledge base, shows which article the answer came from, and declines
+to answer (referring the customer to support) when the knowledge base does not contain
+enough evidence.
 
-Built to demonstrate the full ML/NLP pipeline end to end: data → classic ML classifier → NLP sentiment scoring → vector retrieval → generation → a usable UI → tests.
+> **DEMO DATA.** The knowledge base (22 FAQ articles) and the ticket set (186 tickets)
+> are synthetic examples. They are NOT the verified policies of any real company.
+> This project demonstrates an architecture. It is not production-ready and has not
+> been tested with real customers.
 
-## Why this project
+## Problem statement
 
-Customer service automation sits exactly at the intersection of my background (ten months handling claims/case data at Optum with strict compliance requirements) and my M.Sc. focus (Machine Learning & Conversational AI). It's also directly what several roles I'm applying to ask for — AI + automation, text analytics/sentiment, and conversational AI.
+A support chatbot that always answers can present unsupported claims as facts. In the
+starter project, the question "What is the status of my specific refund?" returned the
+generic refund policy, and an empty or unrelated question returned an arbitrary article
+(a retrieval similarity of 0.0 was still turned into an answer).
+
+Objective: build a lightweight, free, offline RAG assistant that answers when the
+knowledge base provides evidence, shows its source, and declines otherwise, and measure
+the improvement on a labeled test set.
+
+## What was added to the starter project
+
+| Starter project | This project |
+|---|---|
+| Always answers with the top retrieved article | Answerability checks decide whether to answer or refer to support |
+| "I'm escalating to a human agent" (no such mechanism exists) | Accurate wording: "Please contact our support team" |
+| Confidence label on the intent score | Labeled as an uncalibrated classifier score, shown only in Developer view |
+| No source shown | Source FAQ shown with every answer |
+| 7 smoke tests | 12 tests, including tests for correct abstention |
+| No evaluation | 41 labeled questions, dev/held-out split, saved baseline and results |
+| Single UI | Simple customer view plus a Developer view with scores and evaluation tables |
 
 ## Architecture
 
 ```
-customer message
-      │
-      ├──► Intent classifier  (TF-IDF + Logistic Regression, scikit-learn)
-      ├──► Sentiment scorer   (VADER)
-      └──► Retriever          (TF-IDF → LSA embeddings → FAISS cosine search)
-                  │
-                  ▼
-           top-k matching FAQ articles
-                  │
-                  ▼
-           Answer generator (template mode by default;
-           swaps to a live LLM call if OPENAI_API_KEY is set)
-                  │
-                  ▼
-           Streamlit chat UI
+customer question
+      |
+      +--> Intent classifier  (TF-IDF + Logistic Regression)   shown in Developer view only
+      +--> Sentiment scorer   (VADER)                          adjusts reply tone
+      +--> Retriever          (TF-IDF -> LSA -> FAISS cosine search, top 3)
+                |
+                v
+        Answerability check   (src/answerability.py)
+          1. empty question                         -> decline
+          2. needs the customer's own records       -> decline
+             (order numbers, "status of my...", "where is my order")
+          3. no evidence (top similarity 0.0)       -> decline
+          4. low term coverage (fewer than 30% of the question's
+             meaningful words appear in the retrieved articles) -> decline
+                |
+                v
+        Answer generator     (template mode, offline, default)
+                |
+                v
+        Streamlit UI         (answer + source, or a "please contact support" message)
 ```
 
-Every stage is a separate module in `src/` with a single responsibility, so any one piece (e.g. swap the classifier for a transformer, swap the retriever for real neural embeddings, swap the generator for a different LLM) can be replaced without touching the others. `src/pipeline.py` is the only place that wires them together — the UI and the tests both call that, never the individual modules directly, so there's one source of truth for the pipeline logic.
+Retrieval similarity is NOT treated as answer confidence or correctness. A related
+article can score high without answering the question. The rules in step 2 above are
+simple keyword patterns: crude by design, and evaluated rather than trusted.
 
-## Results
+The optional OpenAI generation mode (enabled only if `OPENAI_API_KEY` is set) is off by
+default, was not evaluated, and is not needed for any result below. A prompt instruction
+is not a guarantee against hallucination.
 
-- Intent classifier: **97% accuracy** on a held-out test split across 6 intent classes (186 tickets total — see `data/generate_data.py` for how the dataset was built and why).
-- Retrieval: cosine similarity of 0.85–0.98 on clearly-matching queries in manual testing (see `src/retriever.py`'s `__main__` block).
-- 7/7 automated tests passing (`pytest tests/ -v`) covering sentiment direction, classifier loading, retrieval relevance/ordering, and full-pipeline smoke tests including edge cases (empty input, off-topic input).
+## Evaluation
 
-## Quickstart
+**Test set** (`eval/eval_set.json`): 41 questions, 22 answerable from the knowledge base
+and 19 not (customer-specific, not in the knowledge base, ambiguous, sensitive, empty).
+Each has the relevant FAQ ids and the expected behaviour (answer or decline).
 
-```bash
+- **dev (19 questions):** used while designing the rules.
+- **held-out (22 questions):** scored only in aggregate, and the rules were frozen before
+  the final run. 10 were written by the project author in their own words without looking
+  at the FAQ answers; the other 12 were drafted with AI assistance.
+
+**Metrics**
+- *recall@k:* share of answerable questions with a relevant article in the top k results.
+- *MRR:* mean of 1 / (rank of the first relevant article).
+- *Unanswerable correctly declined:* share of unanswerable questions the system declined.
+- *Answerable declined:* share of answerable questions the system declined (the cost of
+  being cautious).
+- *Correct top-1 answers:* answerable questions answered with a labeled relevant article
+  as the top source. This measures source relevance, not the factual correctness of the text.
+
+**Results, held-out split (the fairer view; 12 answerable, 10 unanswerable)**
+
+| Stage | Unanswerable correctly declined | Answerable declined | recall@1 | recall@3 | MRR |
+|---|---|---|---|---|---|
+| Baseline (starter project) | 0/10 | 0/12 | 0.58 | 0.75 | 0.64 |
+| + account-record and no-evidence rules | 4/10 (40%) | 0/12 | 0.58 | 0.75 | 0.64 |
+| + term-coverage rule | 6/10 (60%) | 3/12 (25%) | 0.58 | 0.75 | 0.64 |
+
+**Results, all 41 questions (22 answerable, 19 unanswerable)**
+
+| Stage | Unanswerable correctly declined | Answerable declined | recall@1 | recall@3 | MRR |
+|---|---|---|---|---|---|
+| Baseline (starter project) | 0/19 | 0/22 | 0.64 | 0.73 | 0.67 |
+| + account-record and no-evidence rules | 11/19 (58%) | 1/22 (5%) | 0.64 | 0.73 | 0.67 |
+| + term-coverage rule | 15/19 (79%) | 4/22 (18%) | 0.64 | 0.73 | 0.67 |
+
+**How to read these**
+- Retrieval metrics are identical in every row because retrieval was not changed.
+  Retrieval is the weaker part: recall@1 is about 0.6.
+- Correct top-1 answers stayed the same at every stage (7/12 held-out, 14/22 overall). So
+  the answerable questions that were declined had not been answered with the correct
+  article before: wrong answers became referrals, and no correct answer was lost.
+- On the dev split the final rule declines 9/9 unanswerable questions, but the rules were
+  tuned on those questions, so that number is partly built in. Use the held-out figures.
+- 4 of the 10 unanswerable held-out questions still receive an answer.
+
+## Limitations
+
+- Tiny synthetic data: 22 FAQ articles; 186 tickets, of which 35 texts are duplicates.
+- Small test sets: one question moves a rate by about 4-5 percentage points. The results
+  are indicative, not statistically strong.
+- The coverage threshold (0.3) was chosen from two dev questions and the gap around it is
+  small. It may not generalise.
+- Keyword rules for customer-specific questions will miss other phrasings.
+- Retrieval (TF-IDF + LSA) cannot match synonyms. For example "broken" does not match
+  "damaged", so some correct questions get no relevant article.
+- The intent classifier was not independently evaluated (duplicate texts can leak between
+  train and test). Its score is not calibrated and does not affect the answer.
+- Template mode copies the retrieved FAQ answer and adds a short tone prefix.
+- No access to real orders or accounts, no multi-turn memory, and no real escalation to
+  a human. The UI says to contact support; nothing is sent.
+- Part of the test set and the rules were drafted with AI assistance (see Evaluation).
+
+## Ethics and privacy
+
+- All data is synthetic. Do not use real customer data without authorization and safeguards.
+- A deployment handling personal data would need data minimisation, access control,
+  retention limits and careful handling of secrets (never commit API keys).
+- Sentiment describes tone only. It does not establish urgency or correctness.
+
+## Setup and run (Windows, Python 3.11)
+
+```
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
-python train.py          # generates data, trains the classifier, builds the FAISS index
-streamlit run app.py      # opens the demo UI at http://localhost:8501
+python train.py
+streamlit run app.py
 ```
 
-Try asking it:
-- "I was charged twice and no one has refunded me!"
-- "How long does shipping usually take?"
-- "The app crashes every time I open it"
+Tick **Developer view** in the sidebar to see intent, sentiment, scores, retrieved
+evidence and the evaluation tab.
 
-Run the tests:
-```bash
-python -m pytest tests/ -v
 ```
-
-Run the pipeline from the command line without the UI:
-```bash
-python -m src.pipeline
+python -m pytest -q                                   # 12 tests
+python eval\run_eval.py --split all --label mytest    # use a NEW label, do not overwrite saved results
+python eval\report_table.py                           # prints the summary tables above
 ```
 
 ## Project layout
 
 ```
-support-ai-assistant/
-├── app.py                    # Streamlit UI
-├── train.py                  # one-time setup: trains classifier + builds index
-├── requirements.txt
-├── data/
-│   ├── generate_data.py      # builds the synthetic dataset (see note below)
-│   ├── tickets.csv           # 186 labeled tickets: text, intent, sentiment_label
-│   └── faq_knowledge_base.json  # 22-article knowledge base the retriever searches
-├── src/
-│   ├── intent_classifier.py  # TF-IDF + Logistic Regression
-│   ├── sentiment.py          # VADER wrapper
-│   ├── retriever.py          # TF-IDF → LSA → FAISS retrieval
-│   ├── generator.py          # template / LLM answer generation
-│   └── pipeline.py           # wires the above together
-├── models/                   # trained artifacts (generated by train.py, gitignored)
-└── tests/
-    └── test_pipeline.py      # 7 pytest tests
+app.py                  Streamlit UI (customer view + Developer view)
+train.py                trains the intent classifier and builds the retrieval index
+data/                   generate_data.py, tickets.csv, faq_knowledge_base.json (synthetic)
+src/                    intent_classifier, sentiment, retriever, answerability,
+                        generator, pipeline
+eval/                   eval_set.json, run_eval.py, coverage_dev.py, report_table.py,
+                        results/ (saved baseline and step results)
+tests/test_pipeline.py  12 tests
+models/                 generated by train.py (not tracked in git)
 ```
 
-## A note on the dataset
+## Future scope
 
-The dataset (`data/tickets.csv`, `data/faq_knowledge_base.json`) is synthetic — hand-authored to be realistic and to run fully offline with no external downloads. This was a deliberate environment constraint, not a shortcut: see `data/generate_data.py`'s docstring for exactly why, and for the swap-in instructions to a real public dataset (e.g. the Bitext Customer Support LLM dataset on Hugging Face, ~27k labeled tickets) if you want a stronger version for your final submission — see **Level up** below for exactly how.
-
-Likewise, sentiment (VADER) and retrieval (TF-IDF+LSA instead of neural embeddings) were chosen so the whole project runs on a laptop with no GPU and no multi-hundred-MB model downloads. These are real, defensible NLP techniques — not toys — but a transformer-based version is a natural "v2" and is exactly what interviewers like to hear you talk through: *why* you chose the simpler approach first, and what you'd change with more time/data/compute.
-
-## Known limitations (worth stating up front — this is what a strong candidate does)
-
-- Intent classifier confidence scores are not well-calibrated with only ~30 examples per class; a couple of semantically close intents (e.g. "refund timing" vs "shipping timing") get confused at the classifier stage. Retrieval still recovers the right answer in these cases because it's decoupled from the intent label — a good example of why a modular pipeline is more robust than one monolithic model.
-- No conversation memory — each query is handled independently, no multi-turn context.
-- Template generation mode is intentionally simple; the LLM mode is the "real" generation path and needs an API key.
-
-## Level up (optional extensions, in order of effort)
-
-1. **Real embeddings**: install `sentence-transformers`, replace the `TfidfVectorizer + TruncatedSVD` block in `src/retriever.py` with `SentenceTransformer("all-MiniLM-L6-v2").encode(texts)` — the FAISS indexing/search code below it doesn't need to change at all.
-2. **Live LLM generation**: `pip install openai`, set `OPENAI_API_KEY`, and `generator.py` automatically switches from template mode to real generation — no other code changes needed.
-3. **Real dataset**: swap `data/tickets.csv` for the Bitext Customer Support LLM dataset (`pip install datasets`, `load_dataset("bitext/Bitext-customer-support-llm-chatbot-training-dataset")`), remap its `category`/`intent` columns to match `intent_classifier.py`'s expected schema.
-4. **Multi-turn memory**: add a `history` parameter threaded through `pipeline.py` and into the generation prompt.
-5. **Deploy**: push to GitHub, deploy `app.py` free on Streamlit Community Cloud so you can link a live demo, not just a repo.
-
-## License
-
-MIT — see `LICENSE`.
+- Compare the LSA retriever with a small neural embedding model, measuring size, speed and recall.
+- Allow an organisation to upload its own approved documents, with source metadata.
+- Evaluate the intent classifier on deduplicated data.
+- Enlarge and independently label the test set.
+- A tool-using agent (order lookup, ticket creation) as a separate extension.
+- Real human escalation, and multi-turn conversation.
