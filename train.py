@@ -25,8 +25,7 @@ def main():
 
     print("\n--- Training intent classifier ---")
     result = train_intent_classifier(str(TICKETS_CSV))
-    print(f"Test accuracy: {result['accuracy']:.3f}  (not reliable: the ticket data has duplicate texts)")
-
+    print(result["report"])
     print("\nSetup complete. Run: streamlit run app.py")
 
 

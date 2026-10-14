@@ -1,66 +1,103 @@
 """
 Intent classification: TF-IDF + Logistic Regression.
 
-Why this instead of a transformer? On ~200 labeled tickets a linear model on TF-IDF
-features is the correct choice (transformers overfit tiny datasets and need far more
-data to beat a strong linear baseline). This module is written so swapping in a
-transformer fine-tune later is a drop-in replacement — see README "Level up" section.
+Evaluation notes:
+ - Duplicate tickets are removed first. Texts that differ only in digits (such as
+   order numbers) count as duplicates, because they come from the same template.
+ - Accuracy comes from stratified cross-validation on the unique tickets, not from
+   one small random split.
+ - Average confidence is compared with accuracy to check whether the score behaves
+   like a probability.
+Intent is shown in the UI but does NOT decide the answer.
 """
-import joblib
-import pandas as pd
+import re
 from pathlib import Path
+
+import joblib
+import numpy as np
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.pipeline import Pipeline
 
 MODELS_DIR = Path(__file__).parent.parent / "models"
-MODELS_DIR.mkdir(exist_ok=True)
 MODEL_PATH = MODELS_DIR / "intent_classifier.joblib"
 
 
-def load_tickets(csv_path: str) -> pd.DataFrame:
-    return pd.read_csv(csv_path)
+def normalise_text(text) -> str:
+    """Lower-case, replace every run of digits with '#', collapse spaces."""
+    text = re.sub(r"\d+", "#", str(text).lower())
+    return re.sub(r"\s+", " ", text).strip()
 
 
-def train_intent_classifier(csv_path: str, save: bool = True) -> dict:
-    df = load_tickets(csv_path)
+def load_unique_tickets(csv_path):
+    """Return (unique tickets, info dict with raw/unique counts and label conflicts)."""
+    df = pd.read_csv(csv_path)[["text", "intent"]].dropna()
+    df["key"] = df["text"].map(normalise_text)
+    conflicts = int((df.groupby("key")["intent"].nunique() > 1).sum())
+    unique = df.drop_duplicates(subset="key", keep="first").reset_index(drop=True)
+    info = {"n_raw": len(df), "n_unique": len(unique), "label_conflicts": conflicts}
+    return unique[["text", "intent"]], info
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        df["text"], df["intent"], test_size=0.2, random_state=42, stratify=df["intent"]
-    )
 
-    pipeline = Pipeline([
-        ("tfidf", TfidfVectorizer(ngram_range=(1, 2), min_df=1, stop_words="english")),
+def build_model() -> Pipeline:
+    return Pipeline([
+        ("tfidf", TfidfVectorizer(ngram_range=(1, 2), stop_words="english")),
         ("clf", LogisticRegression(max_iter=1000, class_weight="balanced")),
     ])
-    pipeline.fit(X_train, y_train)
 
-    y_pred = pipeline.predict(X_test)
-    report = classification_report(y_test, y_pred, zero_division=0)
-    accuracy = accuracy_score(y_test, y_pred)
 
+def train_intent_classifier(csv_path, save: bool = True) -> dict:
+    data, info = load_unique_tickets(csv_path)
+    X, y = data["text"], data["intent"].to_numpy()
+    classes, counts = np.unique(y, return_counts=True)
+
+    lines = [
+        f"Tickets in file: {info['n_raw']}; unique after removing duplicates "
+        f"(digits ignored): {info['n_unique']}",
+        f"Texts with conflicting labels: {info['label_conflicts']}",
+        "Unique tickets per intent: " + ", ".join(f"{c}={n}" for c, n in zip(classes, counts)),
+    ]
+
+    accuracy = None
+    folds = int(min(5, counts.min()))
+    if folds >= 2:
+        cv = StratifiedKFold(n_splits=folds, shuffle=True, random_state=42)
+        proba = cross_val_predict(build_model(), X, y, cv=cv, method="predict_proba")
+        pred = classes[proba.argmax(axis=1)]
+        accuracy = float((pred == y).mean())
+        mean_conf = float(proba.max(axis=1).mean())
+        lines += [
+            f"\n{folds}-fold cross-validated accuracy on unique tickets: {accuracy:.3f}",
+            f"Average confidence score: {mean_conf:.3f}  "
+            "(if this is far from accuracy, the score is not calibrated)",
+            "Caution: tickets are template-generated, so near-duplicates may remain and "
+            "this figure is probably still optimistic.\n",
+            classification_report(y, pred, zero_division=0),
+        ]
+    else:
+        lines.append("Too few tickets in the smallest class for cross-validation.")
+
+    final = build_model().fit(X, y)
     if save:
-        joblib.dump(pipeline, MODEL_PATH)
+        MODELS_DIR.mkdir(parents=True, exist_ok=True)
+        joblib.dump(final, MODEL_PATH)
+    return {"pipeline": final, "accuracy": accuracy, "report": "\n".join(lines)}
 
-    return {"pipeline": pipeline, "accuracy": accuracy, "report": report}
 
-
-def load_classifier(path: str = None):
+def load_classifier(path=None):
     return joblib.load(path or MODEL_PATH)
 
 
-def predict_intent(pipeline, text: str) -> dict:
-    pred = pipeline.predict([text])[0]
-    proba = pipeline.predict_proba([text])[0]
-    classes = pipeline.classes_
-    confidence = float(max(proba))
-    return {"intent": pred, "confidence": round(confidence, 3),
-            "all_scores": {c: round(float(p), 3) for c, p in zip(classes, proba)}}
-
-
-if __name__ == "__main__":
-    result = train_intent_classifier(str(Path(__file__).parent.parent / "data" / "tickets.csv"))
-    print(f"Test accuracy: {result['accuracy']:.3f}\n")
-    print(result["report"])
+def predict_intent(model, text) -> dict:
+    text = text if isinstance(text, str) else ""
+    proba = model.predict_proba([text])[0]
+    classes = list(model.classes_)
+    best = int(proba.argmax())
+    return {
+        "intent": classes[best],
+        "confidence": round(float(proba[best]), 3),
+        "all_scores": {c: round(float(p), 3) for c, p in zip(classes, proba)},
+    }
