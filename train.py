@@ -1,34 +1,33 @@
 """
-One-time setup script: generates data (if missing), trains the intent classifier,
-and builds the FAISS retrieval index. Run this once before app.py or the tests.
+One-time setup: builds the knowledge-base index and trains the intent classifier.
 
     python train.py
 """
+import sys
 from pathlib import Path
+
 from src.intent_classifier import train_intent_classifier
-from src.retriever import build_index
+from src.kb_retriever import DEFAULT_INDEX_PATH, DEFAULT_KB_PATH, KnowledgeBase
 
 ROOT = Path(__file__).parent
 TICKETS_CSV = ROOT / "data" / "tickets.csv"
-KB_JSON = ROOT / "data" / "faq_knowledge_base.json"
 
 
 def main():
-    if not TICKETS_CSV.exists() or not KB_JSON.exists():
-        print("Data files missing, generating synthetic dataset...")
-        import subprocess
-        subprocess.run(["python3", str(ROOT / "data" / "generate_data.py")], check=True)
+    missing = [str(p) for p in (TICKETS_CSV, DEFAULT_KB_PATH) if not p.exists()]
+    if missing:
+        sys.exit(f"Missing data file(s): {missing}")
+
+    print("--- Building knowledge-base index ---")
+    kb = KnowledgeBase.build(DEFAULT_KB_PATH)
+    kb.save(DEFAULT_INDEX_PATH)
+    print(f"Indexed {len(kb.articles)} articles -> {DEFAULT_INDEX_PATH}")
 
     print("\n--- Training intent classifier ---")
     result = train_intent_classifier(str(TICKETS_CSV))
-    print(f"Test accuracy: {result['accuracy']:.3f}")
-    print(result["report"])
+    print(f"Test accuracy: {result['accuracy']:.3f}  (not reliable: the ticket data has duplicate texts)")
 
-    print("--- Building retrieval index ---")
-    build_index(str(KB_JSON))
-    print("Index built and saved to models/")
-
-    print("\nSetup complete. Run `streamlit run app.py` or `python3 -m src.pipeline` to try it.")
+    print("\nSetup complete. Run: streamlit run app.py")
 
 
 if __name__ == "__main__":
