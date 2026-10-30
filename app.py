@@ -34,6 +34,11 @@ st.set_page_config(page_title="AI Support Assistant", page_icon="\U0001F4AC", la
 
 @st.cache_resource
 def get_assistant():
+    import subprocess, sys
+    from src.intent_classifier import MODEL_PATH
+    from src.kb_retriever import DEFAULT_INDEX_PATH
+    if not (Path(MODEL_PATH).exists() and Path(DEFAULT_INDEX_PATH).exists()):
+        subprocess.run([sys.executable, "train.py"], cwd=ROOT, check=True)
     return SupportAssistant()
 
 
