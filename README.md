@@ -4,7 +4,7 @@ An offline Retrieval-Augmented Generation (RAG) customer-support assistant. It a
 questions from a knowledge base, shows which articles the answer came from, and declines
 to answer (referring the customer to support) when the knowledge base does not contain
 enough evidence.
-
+** Live Demo:** https://ai-support-assistant-rag-vcraedqq5kejm8sjzpfltn.streamlit.app/
 > **DEMO DATA.** The knowledge base (22 FAQ articles) and the ticket set (186 tickets)
 > are synthetic examples, not the verified policies of any real company. This project
 > demonstrates an architecture. It is not production-ready and has not been tested with
